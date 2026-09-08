@@ -1,0 +1,1416 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merge de Peças — RollerCoin</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    color-scheme: dark;
+
+    --bg:        #101228;
+    --grid:      #191d3a;
+    --panel:     #1a1f3d;
+    --panel-2:   #212747;
+    --line:      #2e3565;
+    --line-soft: #242a52;
+
+    --ink:   #e9ebf8;
+    --ink-2: #9ba2cd;
+    --ink-3: #6a7199;
+
+    --accent: #3fd3d8;
+    --good:   #4fdd8b;
+    --bad:    #ff5f70;
+    --warn:   #ffb84d;
+
+    --r-common:    #99a2c6;
+    --r-uncommon:  #4ecb5e;
+    --r-rare:      #3fc8ee;
+    --r-epic:      #dd57e6;
+    --r-legendary: #e6a92c;
+
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+    --step-0: 0.75rem;
+    --step-1: 0.8125rem;
+    --step-2: 0.9375rem;
+    --step-3: 1.125rem;
+    --step-5: clamp(1.75rem, 4.5vw, 2.5rem);
+  }
+
+  html { background: var(--bg); }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 1px 1px, var(--grid) 1px, transparent 0) 0 0 / 22px 22px,
+      radial-gradient(1200px 600px at 50% -10%, #1b2145 0%, var(--bg) 70%);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-2);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 1.5rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: var(--step-0);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.75rem;
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: var(--step-5);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0 0 0.5rem;
+  }
+
+  .lead { color: var(--ink-2); max-width: 60ch; margin: 0; }
+
+  h2 {
+    font-family: var(--mono);
+    font-size: var(--step-3);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .sec-head p { margin: 0; color: var(--ink-3); font-size: var(--step-1); }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: 10px;
+  }
+
+  .config {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 2rem;
+    align-items: flex-end;
+    padding: 1.125rem 1.25rem;
+  }
+  .field { display: flex; flex-direction: column; gap: 0.375rem; }
+  .field label {
+    font-family: var(--mono);
+    font-size: var(--step-0);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .field .hint { font-size: var(--step-0); color: var(--ink-3); max-width: 30ch; }
+  .pctbox { display: flex; align-items: center; gap: 0.375rem; }
+  .pctbox span { font-family: var(--mono); color: var(--ink-3); }
+
+  input[type="number"] {
+    font-family: var(--mono);
+    font-size: var(--step-2);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    background: #12162f;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.4rem 0.5rem;
+    width: 100%;
+  }
+  input[type="number"]:focus-visible,
+  select:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  input[type="number"]::placeholder { color: var(--ink-3); }
+  .pctbox input { width: 5.5rem; }
+
+  select {
+    font-family: var(--mono);
+    font-size: var(--step-2);
+    color: var(--ink);
+    background: #12162f;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.4rem 0.5rem;
+  }
+
+  button {
+    font-family: var(--mono);
+    font-size: var(--step-1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.45rem 0.9rem;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--accent); }
+
+  .status {
+    font-family: var(--mono);
+    font-size: var(--step-0);
+    color: var(--ink-3);
+    min-height: 1.2em;
+  }
+  .status.erro { color: var(--bad); }
+  .status.ok { color: var(--good); }
+
+  .ops { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .op {
+    display: grid;
+    grid-template-columns: 3px 4.5rem 1fr 9rem 8.5rem;
+    align-items: center;
+    gap: 1rem;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: 10px;
+    padding: 0.875rem 1.125rem 0.875rem 0;
+    overflow: hidden;
+  }
+  .op.is-good { border-color: color-mix(in srgb, var(--good) 35%, var(--line-soft)); }
+  .stripe { align-self: stretch; background: var(--ink-3); border-radius: 3px 0 0 3px; }
+  .op.is-good .stripe { background: var(--good); }
+  .op.is-bad  .stripe { background: var(--bad); }
+  .op.is-none .stripe { background: var(--line); }
+
+  .tiers { display: flex; align-items: center; gap: 0.3rem; font-family: var(--mono); font-size: var(--step-0); }
+  .tier {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 0.25rem;
+    border-radius: 4px;
+    font-weight: 700;
+    color: #0f1226;
+  }
+  .arrow { color: var(--ink-3); }
+
+  .op-name { font-family: var(--mono); font-weight: 700; font-size: var(--step-2); }
+  .op-math {
+    font-family: var(--mono);
+    font-size: var(--step-0);
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+    margin-top: 0.15rem;
+  }
+  .op-math b { color: var(--ink-2); font-weight: 400; }
+
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .col-label {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .op-venda .num { font-size: var(--step-2); color: var(--ink-2); }
+  .op-res { text-align: right; }
+  .op-lucro { font-size: var(--step-3); font-weight: 700; }
+  .is-good .op-lucro { color: var(--good); }
+  .is-bad  .op-lucro { color: var(--bad); }
+  .roi {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: var(--step-0);
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    margin-top: 0.15rem;
+  }
+  .is-good .roi { color: var(--good); background: color-mix(in srgb, var(--good) 15%, transparent); }
+  .is-bad  .roi { color: var(--bad);  background: color-mix(in srgb, var(--bad) 15%, transparent); }
+
+  .op-note {
+    grid-column: 3 / -1;
+    font-family: var(--mono);
+    font-size: var(--step-0);
+    color: var(--warn);
+  }
+  .op.is-none { opacity: 0.65; }
+  .op.is-none .op-res { font-family: var(--mono); font-size: var(--step-0); color: var(--ink-3); }
+
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; }
+  th, td { padding: 0.5rem 0.625rem; text-align: left; }
+  thead th {
+    font-family: var(--mono);
+    font-size: var(--step-0);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-bottom: 1px solid var(--line);
+  }
+  tbody td { border-bottom: 1px solid var(--line-soft); }
+  tbody tr:last-child td { border-bottom: 0; }
+  .fam { font-family: var(--mono); font-weight: 700; white-space: nowrap; }
+  .price-cell { width: 8.5rem; }
+  .merge-cell { width: 7.5rem; }
+  tbody tr.grupo td { border-top: 1px solid var(--line); }
+  tbody tr.grupo:first-child td { border-top: 0; }
+  .descontado { color: var(--accent); white-space: nowrap; font-size: var(--step-1); }
+  .qtd {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+    margin-top: 0.25rem;
+  }
+
+  /* ---- colar do mercado ---- */
+  .colar { padding: 1.125rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .colar textarea {
+    font-family: var(--mono);
+    font-size: var(--step-1);
+    line-height: 1.45;
+    color: var(--ink);
+    background: #12162f;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.625rem 0.75rem;
+    min-height: 7.5rem;
+    resize: vertical;
+    width: 100%;
+  }
+  .colar textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .colar textarea::placeholder { color: var(--ink-3); }
+  .colar-acoes { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+  .colar button.primario {
+    color: #0f1226;
+    background: var(--accent);
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+  .colar button.primario:hover { filter: brightness(1.1); color: #0f1226; }
+  .mudancas {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 0.2rem;
+    font-family: var(--mono); font-size: var(--step-0);
+    font-variant-numeric: tabular-nums;
+  }
+  .mudancas li { display: flex; gap: 0.5rem; flex-wrap: wrap; color: var(--ink-3); }
+  .mudancas .nome { color: var(--ink-2); min-width: 11rem; }
+  .mudancas .novo { color: var(--ink); }
+  .mudancas .sobe { color: var(--bad); }
+  .mudancas .desce { color: var(--good); }
+
+  .plan-ctl {
+    display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;
+    padding: 1.125rem 1.25rem; border-bottom: 1px solid var(--line-soft);
+  }
+  .plan-ctl .field input { width: 6rem; }
+  .steps { list-style: none; margin: 0; padding: 1.125rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .step {
+    display: flex; justify-content: space-between; gap: 1rem;
+    font-family: var(--mono); font-size: var(--step-1); font-variant-numeric: tabular-nums;
+  }
+  .step-txt { color: var(--ink-2); }
+  .step.is-buy .step-txt { color: var(--ink); }
+  .step-cost { color: var(--ink-3); white-space: nowrap; }
+  .totals { border-top: 1px solid var(--line); padding: 1.125rem 1.25rem; display: flex; flex-direction: column; gap: 0.375rem; }
+  .total-row {
+    display: flex; justify-content: space-between; gap: 1rem;
+    font-family: var(--mono); font-size: var(--step-1);
+    font-variant-numeric: tabular-nums; color: var(--ink-2);
+  }
+  .total-row.final { font-size: var(--step-3); font-weight: 700; color: var(--ink); padding-top: 0.375rem; }
+  .total-row.final.is-good span:last-child { color: var(--good); }
+  .total-row.final.is-bad  span:last-child { color: var(--bad); }
+
+  .foot {
+    font-size: var(--step-0); color: var(--ink-3);
+    border-top: 1px solid var(--line-soft); padding-top: 1.25rem; max-width: 70ch;
+  }
+  .foot p { margin: 0 0 0.5rem; }
+
+  /* ---- abas ---- */
+  .tabs {
+    display: flex; align-items: center; gap: 0.25rem;
+    border-bottom: 1px solid var(--line-soft);
+    margin-top: -0.75rem;
+  }
+  .tab {
+    font-family: var(--mono); font-size: var(--step-2);
+    letter-spacing: 0; text-transform: none;
+    color: var(--ink-3); background: transparent;
+    border: 0; border-bottom: 2px solid transparent; border-radius: 0;
+    padding: 0.6rem 1rem; cursor: pointer;
+  }
+  .tabs .tab:hover { color: var(--ink); border-color: transparent; border-bottom-color: var(--line); }
+  .tabs .tab.is-active { color: var(--ink); border-bottom-color: var(--accent); }
+  .tabs-status { margin-left: auto; }
+  .tab-panel { display: flex; flex-direction: column; gap: 2.5rem; }
+  .tab-panel[hidden] { display: none; }
+  .sub { margin: 0; color: var(--ink-3); font-size: var(--step-1); }
+
+  /* ---- mineradoras ---- */
+  .miners { display: flex; flex-direction: column; gap: 1rem; }
+  .vazio-msg { color: var(--ink-3); font-family: var(--mono); font-size: var(--step-1); margin: 0; }
+  .miner {
+    background: var(--panel); border: 1px solid var(--line-soft);
+    border-radius: 10px; padding: 1.125rem 1.25rem;
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .miner-top { display: flex; gap: 0.75rem; align-items: center; }
+  .miner-nome {
+    font-family: var(--mono); font-weight: 700; font-size: var(--step-3);
+    color: var(--ink); background: transparent;
+    border: 0; border-bottom: 1px solid var(--line); border-radius: 0;
+    padding: 0.25rem 0.15rem; flex: 1; min-width: 0;
+  }
+  .miner-nome::placeholder { color: var(--ink-3); font-weight: 400; }
+  .miner-nome:focus-visible { outline: none; border-bottom-color: var(--accent); }
+  .btn-x {
+    color: var(--ink-3); background: transparent; border: 1px solid var(--line);
+    padding: 0.3rem 0.55rem; line-height: 1; font-size: var(--step-1);
+  }
+  .btn-x:hover { color: var(--bad); border-color: var(--bad); }
+
+  .ingredientes { display: flex; flex-direction: column; gap: 0.5rem; }
+  .ing-block { display: flex; flex-direction: column; gap: 0.35rem; }
+  .ing-row { display: grid; grid-template-columns: 1fr 5rem minmax(6rem, auto) 2.2rem; gap: 0.5rem; align-items: center; }
+  .ing-row select, .ing-row input { width: 100%; }
+  .ing-sub { font-family: var(--mono); font-size: var(--step-0); color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ing-sub.falta { color: var(--warn); }
+  .ing-custom { display: grid; grid-template-columns: 1fr 7rem; gap: 0.5rem; padding-left: 0.1rem; }
+  .ing-custom input { width: 100%; }
+  .add-ing, .add-miner { align-self: flex-start; }
+
+  .miner-params { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; }
+  .field-label {
+    font-family: var(--mono); font-size: var(--step-0);
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2);
+  }
+  .miner-params .field input { width: 9rem; }
+
+  .miner-resumo {
+    border-top: 1px solid var(--line-soft); padding-top: 0.75rem;
+    display: flex; flex-direction: column; gap: 0.3rem;
+  }
+  .res-row {
+    display: flex; justify-content: space-between; gap: 1rem;
+    font-family: var(--mono); font-size: var(--step-1);
+    font-variant-numeric: tabular-nums; color: var(--ink-2);
+  }
+  .res-row.total { font-size: var(--step-3); font-weight: 700; color: var(--ink); padding-top: 0.2rem; }
+  .res-row .good { color: var(--good); }
+  .res-row .bad { color: var(--bad); }
+
+  @media (max-width: 760px) {
+    .op { grid-template-columns: 3px 1fr auto; row-gap: 0.5rem; padding-right: 0.875rem; }
+    .tiers { grid-row: 1; }
+    .op-info { grid-column: 2 / -1; }
+    .op-venda { grid-column: 2; }
+    .op-res { grid-column: 3; }
+    .op-note { grid-column: 2 / -1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">RollerCoin · Mercado de peças</p>
+    <h1>Vale a pena craftar?</h1>
+    <p class="lead">
+      Comprar as peças no mercado, fazer o merge e revender só compensa quando o preço do
+      nível de cima passa o custo de juntar o de baixo. Coloque os preços de agora e veja o que sobra.
+    </p>
+  </header>
+
+  <nav class="tabs">
+    <button type="button" class="tab is-active" id="tabbtn-pecas" aria-selected="true">Peças</button>
+    <button type="button" class="tab" id="tabbtn-miners" aria-selected="false">Mineradoras</button>
+    <span class="status tabs-status" id="status">Carregando…</span>
+  </nav>
+
+  <div id="tab-pecas" class="tab-panel">
+
+  <section>
+    <div class="sec-head">
+      <h2>Ajustes</h2>
+      <p class="sub">Valem para as duas abas.</p>
+    </div>
+    <div class="panel config">
+      <div class="field">
+        <label for="taxaVenda">Taxa de venda</label>
+        <div class="pctbox"><input type="number" id="taxaVenda" step="0.5" min="0" max="50" value="5"><span>%</span></div>
+        <div class="hint">O que o mercado desconta quando alguém compra sua peça. Confira no jogo.</div>
+      </div>
+      <div class="field">
+        <label for="desconto">Desconto de merge</label>
+        <div class="pctbox"><input type="number" id="desconto" step="1" min="0" max="90" value="10"><span>%</span></div>
+        <div class="hint">O <b>-10%</b> do card. Muda conforme o nível do seu craft — troque aqui e vale pra tudo.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Oportunidades</h2>
+      <p>Comprar os inputs → merge → vender. Ordenado por retorno.</p>
+    </div>
+    <div class="ops" id="ops"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Preços do mercado</h2>
+      <p>O menor preço da lista (o <b>From</b>). Em branco = não está à venda.</p>
+    </div>
+
+    <div class="panel colar">
+      <label class="field" for="colado">
+        <span style="font-family: var(--mono); font-size: var(--step-0); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2);">Colar do mercado</span>
+      </label>
+      <textarea id="colado" spellcheck="false" placeholder="Selecione a lista de peças no mercado, copie e cole aqui. Ex.:&#10;&#10;product&#10;Uncommon Fan&#10;&#10;Quantity: 435 599&#10;&#10;From&#10;&#10;0.0105 RLT"></textarea>
+      <div class="colar-acoes">
+        <button type="button" class="primario" id="lerColado">Ler e atualizar</button>
+        <button type="button" id="limparColado">Limpar</button>
+        <span class="status" id="statusColar"></span>
+      </div>
+      <ul class="mudancas" id="mudancas"></ul>
+    </div>
+
+    <div class="panel scroll" style="margin-top: 0.75rem;">
+      <table>
+        <thead><tr id="priceHead"></tr></thead>
+        <tbody id="priceBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Receitas de merge</h2>
+      <p>Cada peça tem a sua taxa. Digite os valores <b>riscados</b> do card; a última coluna mostra o que sai com o desconto e deve bater com o que o jogo cobra.</p>
+    </div>
+    <div class="panel scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Peça</th>
+            <th>Merge</th>
+            <th>Quantidade</th>
+            <th>Taxa (RLT)</th>
+            <th>Com desconto</th>
+          </tr>
+        </thead>
+        <tbody id="mergeBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Cadeia completa</h2>
+      <p>Do zero até a peça, escolhendo comprar ou craftar em cada nível.</p>
+    </div>
+    <div class="panel">
+      <div class="plan-ctl">
+        <div class="field">
+          <label for="alvo">Peça</label>
+          <select id="alvo"></select>
+        </div>
+        <div class="field">
+          <label for="qtdAlvo">Quantidade</label>
+          <input type="number" id="qtdAlvo" min="1" step="1" value="1">
+        </div>
+      </div>
+      <ul class="steps" id="steps"></ul>
+      <div class="totals" id="totals"></div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p><b>Como a conta é feita:</b> custo = quantidade × preço do input + taxa do merge. Receita = preço da peça − taxa de venda. O mesmo preço serve para comprar e vender, então na prática você precisa igualar o menor anúncio e esperar a venda sair.</p>
+    <p>As receitas guardam o valor cheio, e o <b>desconto de merge</b> é aplicado por cima. Subiu de nível e o desconto mudou? Troque só o campo lá em cima que todas as receitas acompanham.</p>
+    <p>Os dados ficam salvos neste navegador. Limpar os dados do site apaga suas alterações; elas não são sincronizadas entre dispositivos. Preços de mercado mudam o tempo todo — cole a lista de novo sempre que for decidir alguma coisa.</p>
+  </footer>
+
+  </div><!-- /tab-pecas -->
+
+  <div id="tab-miners" class="tab-panel" hidden>
+    <section>
+      <div class="sec-head">
+        <h2>Mineradoras</h2>
+        <p>Monte cada mineradora com as peças que ela pede e a taxa de craft. Os preços das peças vêm da aba Peças.</p>
+      </div>
+      <div id="minersList" class="miners"></div>
+      <button type="button" class="primario add-miner" id="addMiner" style="margin-top: 1rem;">+ Nova mineradora</button>
+    </section>
+
+    <footer class="foot">
+      <p><b>Como a conta é feita:</b> custo = soma de (quantidade × preço de mercado de cada peça) + taxa de craft. Informe o <b>power</b> pra ver o custo por Ph/s; informe o <b>preço de venda</b> da mineradora pra ver o lucro (já descontando a taxa de venda da aba Peças).</p>
+      <p>A <b>taxa de craft</b> é a que o card da mineradora mostra, já com o desconto dela (o -20% do exemplo). Peças sem preço no mercado deixam o custo incompleto — preencha na aba Peças.</p>
+    </footer>
+  </div><!-- /tab-miners -->
+
+</div>
+
+<script src="./parser.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var TIERS = [
+    { id: "common",    nome: "Common",    rom: "I",   cor: "var(--r-common)" },
+    { id: "uncommon",  nome: "Uncommon",  rom: "II",  cor: "var(--r-uncommon)" },
+    { id: "rare",      nome: "Rare",      rom: "III", cor: "var(--r-rare)" },
+    { id: "epic",      nome: "Epic",      rom: "IV",  cor: "var(--r-epic)" },
+    { id: "legendary", nome: "Legendary", rom: "V",   cor: "var(--r-legendary)" }
+  ];
+
+  var FAMILIAS = [
+    { id: "fan",  nome: "Fan" },
+    { id: "wire", nome: "Wire" },
+    { id: "hash", nome: "Hashboard" }
+  ];
+
+  var dados = null;
+  var moeda = "RLT";
+
+  function vazio() {
+    return { common: null, uncommon: null, rare: null, epic: null, legendary: null };
+  }
+
+  /* ---------- armazenamento local ---------- */
+
+  var statusEl = document.getElementById("status");
+  var timerSalvar = null;
+
+  function status(txt, cls) {
+    statusEl.textContent = txt;
+    statusEl.className = "status" + (cls ? " " + cls : "");
+  }
+
+  function agendarSalvar() {
+    clearTimeout(timerSalvar);
+    status("Salvando…");
+    timerSalvar = setTimeout(salvar, 400);
+  }
+
+  var storageKey = "roller:dados:" + location.pathname;
+
+  function salvar() {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(dados));
+      status("Salvo neste navegador", "ok");
+    } catch (e) {
+      status("Não foi possível salvar neste navegador: " + e.message, "erro");
+    }
+  }
+
+  function carregarDados() {
+    return Promise.resolve().then(function () {
+      var salvo = localStorage.getItem(storageKey);
+      if (salvo !== null) return JSON.parse(salvo);
+      return fetch("./dados.json").then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      });
+    });
+  }
+  /* ---------- conta ---------- */
+
+  function fmt(v, casas) {
+    if (v === null || v === undefined || !isFinite(v)) return "—";
+    var s = v.toFixed(casas === undefined ? 6 : casas);
+    if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+    return s;
+  }
+
+  function pct(v) {
+    if (v === null || !isFinite(v)) return "—";
+    return (v >= 0 ? "+" : "") + (v * 100).toFixed(1) + "%";
+  }
+
+  // Cada tipo de peça tem a sua taxa por nível, e o desconto (que muda com o nível
+  // do craft) vale pra todas. A quantidade arredonda pra cima: 5 → 4.5 → 5, como no jogo.
+  function receita(fam, i) {
+    var base = dados.merge[fam][i];
+    var restante = 100 - dados.config.desconto_merge;
+    // O jogo arredonda a quantidade (4.25 → 4, 8.5 → 9, 42.5 → 43): round, não ceil.
+    // Multiplica antes de dividir por 100 pra 42.5 sair exato e não virar 42.499…
+    return { qtd: Math.round(base.qtd * restante / 100), taxa: base.taxa * restante / 100 };
+  }
+
+  // Preço 0 não é "de graça", é "não está à venda" — senão o craft do nível de cima
+  // aparece como lucro infinito. Só o que for maior que zero conta como preço.
+  function preco(fam, ti) {
+    var v = dados.precos[fam] ? dados.precos[fam][TIERS[ti].id] : null;
+    return (typeof v === "number" && isFinite(v) && v > 0) ? v : null;
+  }
+
+  function quantidade(fam, tierId) {
+    var f = dados.quantidades && dados.quantidades[fam];
+    var v = f ? f[tierId] : null;
+    return (typeof v === "number" && isFinite(v)) ? v : null;
+  }
+
+  function milhar(n) {
+    return n === null ? "" : n.toLocaleString("pt-BR");
+  }
+
+  function acha(fam) { return FAMILIAS.filter(function (f) { return f.id === fam; })[0]; }
+  function nomeItem(fam, ti) { return TIERS[ti].nome + " " + acha(fam).nome; }
+
+  function vendaLiquida(fam, ti) {
+    var p = preco(fam, ti);
+    return p === null ? null : p * (1 - dados.config.taxa_venda / 100);
+  }
+
+  // Menor custo para 1 unidade: comprar pronto ou craftar a partir do nível de baixo.
+  function melhorCusto(fam, ti) {
+    var ops = [preco(fam, ti), custoCraft(fam, ti)].filter(function (v) { return v !== null; });
+    return ops.length ? Math.min.apply(null, ops) : null;
+  }
+
+  function custoCraft(fam, ti) {
+    if (ti === 0) return null;
+    var r = receita(fam, ti - 1);
+    var base = melhorCusto(fam, ti - 1);
+    return base === null ? null : r.qtd * base + r.taxa;
+  }
+
+  // Craft comprando os inputs prontos no mercado, sem descer a cadeia.
+  function custoDireto(fam, ti) {
+    if (ti === 0) return null;
+    var r = receita(fam, ti - 1);
+    var p = preco(fam, ti - 1);
+    return p === null ? null : r.qtd * p + r.taxa;
+  }
+
+  function analisar(fam, ti) {
+    var r = receita(fam, ti - 1);
+    var custo = custoDireto(fam, ti);
+    var venda = vendaLiquida(fam, ti);
+    var lucro = (custo !== null && venda !== null) ? venda - custo : null;
+    return {
+      fam: fam, ti: ti, qtd: r.qtd, taxa: r.taxa,
+      custo: custo, venda: venda, lucro: lucro,
+      roi: (lucro !== null && custo > 0) ? lucro / custo : null,
+      precoInput: preco(fam, ti - 1),
+      precoPronto: preco(fam, ti)
+    };
+  }
+
+  /* ---------- tela ---------- */
+
+  function el(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt !== undefined) n.textContent = txt;
+    return n;
+  }
+
+  function chipTiers(ti) {
+    var box = el("div", "tiers");
+    var a = el("span", "tier", TIERS[ti - 1].rom);
+    a.style.background = TIERS[ti - 1].cor;
+    var b = el("span", "tier", TIERS[ti].rom);
+    b.style.background = TIERS[ti].cor;
+    box.appendChild(a);
+    box.appendChild(el("span", "arrow", "→"));
+    box.appendChild(b);
+    return box;
+  }
+
+  function renderOps() {
+    var alvo = document.getElementById("ops");
+    alvo.textContent = "";
+
+    var lista = [];
+    FAMILIAS.forEach(function (f) {
+      for (var ti = 1; ti < TIERS.length; ti++) lista.push(analisar(f.id, ti));
+    });
+
+    var completos = lista.filter(function (a) { return a.roi !== null; });
+    var faltando = lista.filter(function (a) { return a.roi === null; });
+    completos.sort(function (x, y) { return y.roi - x.roi; });
+
+    completos.concat(faltando).forEach(function (a) { alvo.appendChild(linhaOp(a)); });
+  }
+
+  function linhaOp(a) {
+    var cls = a.lucro === null ? "is-none" : (a.lucro > 0 ? "is-good" : "is-bad");
+    var row = el("div", "op " + cls);
+    row.appendChild(el("div", "stripe"));
+    row.appendChild(chipTiers(a.ti));
+
+    var info = el("div", "op-info");
+    info.appendChild(el("div", "op-name", nomeItem(a.fam, a.ti)));
+
+    var math = el("div", "op-math");
+    if (a.precoInput === null) {
+      math.textContent = a.qtd + "× " + nomeItem(a.fam, a.ti - 1) + " — sem preço";
+    } else {
+      math.appendChild(document.createTextNode(a.qtd + "× " + nomeItem(a.fam, a.ti - 1) + " "));
+      math.appendChild(el("b", null, fmt(a.qtd * a.precoInput)));
+      math.appendChild(document.createTextNode(" + taxa "));
+      math.appendChild(el("b", null, fmt(a.taxa)));
+      math.appendChild(document.createTextNode(" = "));
+      math.appendChild(el("b", null, fmt(a.custo) + " " + moeda));
+    }
+    info.appendChild(math);
+    row.appendChild(info);
+
+    var venda = el("div", "op-venda");
+    venda.appendChild(el("div", "col-label", "Venda líq."));
+    venda.appendChild(el("div", "num", a.venda === null ? "—" : fmt(a.venda) + " " + moeda));
+    row.appendChild(venda);
+
+    var res = el("div", "op-res");
+    if (a.lucro === null) {
+      res.textContent = "sem dados";
+    } else {
+      res.appendChild(el("div", "num op-lucro", (a.lucro > 0 ? "+" : "") + fmt(a.lucro, 4)));
+      res.appendChild(el("span", "roi", pct(a.roi)));
+    }
+    row.appendChild(res);
+
+    // Só avisa quando muda a decisão: craftar sai mais barato que comprar pronto.
+    if (a.custo !== null && a.precoPronto !== null && a.precoPronto > a.custo) {
+      row.appendChild(el("div", "op-note",
+        "Craftar sai " + fmt(a.precoPronto - a.custo) + " " + moeda +
+        " mais barato que comprar pronto (" + fmt(a.precoPronto) + ")."));
+    }
+    return row;
+  }
+
+  function renderPrecos() {
+    var head = document.getElementById("priceHead");
+    var body = document.getElementById("priceBody");
+    head.textContent = "";
+    body.textContent = "";
+
+    head.appendChild(el("th", null, "Peça"));
+    TIERS.forEach(function (t) {
+      var th = el("th", null, t.nome);
+      th.style.color = t.cor;
+      head.appendChild(th);
+    });
+
+    FAMILIAS.forEach(function (f) {
+      var tr = el("tr");
+      tr.appendChild(el("td", "fam", f.nome));
+      TIERS.forEach(function (t) {
+        var td = el("td", "price-cell");
+        var inp = document.createElement("input");
+        inp.type = "number";
+        inp.step = "any";
+        inp.min = "0";
+        inp.placeholder = "—";
+        inp.setAttribute("aria-label", t.nome + " " + f.nome + " — preço em " + moeda);
+        var v = dados.precos[f.id][t.id];
+        inp.value = (v === null || v === undefined) ? "" : v;
+        inp.addEventListener("input", function () {
+          var n = parseFloat(inp.value);
+          dados.precos[f.id][t.id] = (inp.value.trim() === "" || !isFinite(n) || n <= 0) ? null : n;
+          renderOps();
+          renderPlano();
+          agendarSalvar();
+        });
+        td.appendChild(inp);
+
+        var q = quantidade(f.id, t.id);
+        if (q !== null) td.appendChild(el("div", "qtd", milhar(q) + " à venda"));
+
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+  }
+
+  // Guarda as células de receita pra atualizá-las sem redesenhar a tabela
+  // (redesenhar tiraria o foco do campo enquanto a pessoa digita).
+  var celulasReceita = [];
+
+  function atualizaReceitas() {
+    celulasReceita.forEach(function (c) {
+      var r = receita(c.fam, c.i);
+      c.el.textContent = r.qtd + "× " + nomeItem(c.fam, c.i) + " + " + fmt(r.taxa) + " " +
+        moeda + " = 1 " + nomeItem(c.fam, c.i + 1);
+    });
+  }
+
+  function campoMerge(fam, i, chave, passo) {
+    var td = el("td", "merge-cell");
+    var inp = document.createElement("input");
+    inp.type = "number";
+    inp.min = chave === "qtd" ? "1" : "0";
+    inp.step = passo;
+    inp.value = dados.merge[fam][i][chave];
+    inp.setAttribute("aria-label",
+      (chave === "qtd" ? "Quantidade" : "Taxa") + " do merge " +
+      TIERS[i].nome + " para " + TIERS[i + 1].nome + " de " + acha(fam).nome);
+    inp.addEventListener("input", function () {
+      var n = parseFloat(inp.value);
+      var valido = isFinite(n) && (chave === "qtd" ? n > 0 : n >= 0);
+      if (!valido) return; // campo vazio no meio da digitação: não mexe nos dados
+      dados.merge[fam][i][chave] = n;
+      atualizaReceitas();
+      renderTudo();
+      agendarSalvar();
+    });
+    td.appendChild(inp);
+    return td;
+  }
+
+  function renderMerge() {
+    var body = document.getElementById("mergeBody");
+    body.textContent = "";
+    celulasReceita = [];
+
+    FAMILIAS.forEach(function (f) {
+      dados.merge[f.id].forEach(function (passo, i) {
+        var tr = el("tr", i === 0 ? "grupo" : "");
+        tr.appendChild(el("td", "fam", i === 0 ? f.nome : ""));
+
+        var tdNivel = el("td");
+        tdNivel.appendChild(chipTiers(i + 1));
+        tr.appendChild(tdNivel);
+
+        tr.appendChild(campoMerge(f.id, i, "qtd", "1"));
+        tr.appendChild(campoMerge(f.id, i, "taxa", "any"));
+
+        var td = el("td", "num descontado");
+        celulasReceita.push({ el: td, fam: f.id, i: i });
+        tr.appendChild(td);
+
+        body.appendChild(tr);
+      });
+    });
+    atualizaReceitas();
+  }
+
+  function planoPara(fam, ti, qtd) {
+    var comprar = preco(fam, ti);
+    var craft = custoCraft(fam, ti);
+    var vaiCraftar = craft !== null && (comprar === null || craft < comprar);
+
+    if (vaiCraftar) {
+      var r = receita(fam, ti - 1);
+      var passos = planoPara(fam, ti - 1, qtd * r.qtd);
+      passos.push({
+        tipo: "merge",
+        texto: "Merge " + (qtd * r.qtd) + "× " + nomeItem(fam, ti - 1) + " → " + qtd + "× " + nomeItem(fam, ti),
+        custo: qtd * r.taxa,
+        det: "taxa " + fmt(r.taxa) + " × " + qtd
+      });
+      return passos;
+    }
+    return [{
+      tipo: "buy",
+      texto: "Comprar " + qtd + "× " + nomeItem(fam, ti),
+      custo: comprar === null ? null : qtd * comprar,
+      det: comprar === null ? "sem preço" : fmt(comprar) + " cada"
+    }];
+  }
+
+  function renderAlvos() {
+    var sel = document.getElementById("alvo");
+    sel.textContent = "";
+    FAMILIAS.forEach(function (f) {
+      for (var ti = 1; ti < TIERS.length; ti++) {
+        var o = document.createElement("option");
+        o.value = f.id + ":" + ti;
+        o.textContent = nomeItem(f.id, ti);
+        sel.appendChild(o);
+      }
+    });
+    sel.value = "fan:3";
+  }
+
+  function totalRow(a, b) {
+    var d = el("div", "total-row");
+    d.appendChild(el("span", null, a));
+    d.appendChild(el("span", null, b));
+    return d;
+  }
+
+  function renderPlano() {
+    var partes = document.getElementById("alvo").value.split(":");
+    var fam = partes[0];
+    var ti = parseInt(partes[1], 10);
+    var qtd = Math.max(1, parseInt(document.getElementById("qtdAlvo").value, 10) || 1);
+
+    var lista = document.getElementById("steps");
+    var tot = document.getElementById("totals");
+    lista.textContent = "";
+    tot.textContent = "";
+
+    var passos = planoPara(fam, ti, qtd);
+    var total = 0;
+    var incompleto = false;
+
+    passos.forEach(function (p) {
+      var li = el("li", "step " + (p.tipo === "buy" ? "is-buy" : ""));
+      li.appendChild(el("span", "step-txt", p.texto));
+      li.appendChild(el("span", "step-cost", (p.custo === null ? "—" : fmt(p.custo) + " " + moeda) + "  (" + p.det + ")"));
+      lista.appendChild(li);
+      if (p.custo === null) incompleto = true; else total += p.custo;
+    });
+
+    if (incompleto) {
+      tot.appendChild(totalRow("Falta o preço de alguma peça da cadeia.", "—"));
+      return;
+    }
+
+    tot.appendChild(totalRow("Custo total", fmt(total) + " " + moeda));
+    tot.appendChild(totalRow("Custo por unidade", fmt(total / qtd) + " " + moeda));
+
+    // Sem nenhum merge no caminho o "lucro" seria só comprar e revender a mesma peça,
+    // ou seja, a taxa de venda negativa. Mostra a comparação com o craft no lugar.
+    var temMerge = passos.some(function (p) { return p.tipo === "merge"; });
+    if (!temMerge) {
+      var craft = custoCraft(fam, ti);
+      tot.appendChild(totalRow(
+        "Craftar sairia por",
+        craft === null ? "não dá — falta preço do nível de baixo" : fmt(craft * qtd) + " " + moeda
+      ));
+      var nota = totalRow("Comprar pronto é o caminho mais barato. Não há merge que compense aqui.", "");
+      nota.className = "total-row final";
+      tot.appendChild(nota);
+      return;
+    }
+
+    var venda = vendaLiquida(fam, ti);
+    if (venda === null) {
+      tot.appendChild(totalRow("Venda", nomeItem(fam, ti) + " não está no mercado"));
+      return;
+    }
+    var receitaTotal = venda * qtd;
+    var lucro = receitaTotal - total;
+    tot.appendChild(totalRow("Vendendo " + qtd + "× (líq. de taxa)", fmt(receitaTotal) + " " + moeda));
+
+    var fin = totalRow("Lucro", (lucro > 0 ? "+" : "") + fmt(lucro, 4) + " " + moeda + "   " + pct(total > 0 ? lucro / total : null));
+    fin.className = "total-row final " + (lucro > 0 ? "is-good" : "is-bad");
+    tot.appendChild(fin);
+  }
+
+  function renderTudo() { renderOps(); renderPlano(); }
+
+  /* ---------- mineradoras ---------- */
+
+  // ref é "fam:tierId" (ex.: "fan:rare"), ou "custom" para peça de fora da lista.
+  function refInfo(ref) {
+    if (!ref || ref === "custom") return null;
+    var p = ref.split(":");
+    var fam = p[0];
+    var ti = TIERS.map(function (t) { return t.id; }).indexOf(p[1]);
+    if (!acha(fam) || ti < 0) return null;
+    return { fam: fam, ti: ti };
+  }
+
+  function precoIngrediente(ing) {
+    if (ing.ref === "custom") {
+      return (typeof ing.preco === "number" && isFinite(ing.preco) && ing.preco > 0) ? ing.preco : null;
+    }
+    var info = refInfo(ing.ref);
+    return info ? preco(info.fam, info.ti) : null; // preco() já trata 0 e ausência como null
+  }
+
+  function analisarMiner(m) {
+    var custoPecas = 0;
+    var incompleto = false;
+    (m.ingredientes || []).forEach(function (ing) {
+      var q = (typeof ing.qtd === "number" && ing.qtd > 0) ? ing.qtd : 0;
+      if (q === 0) return;
+      var p = precoIngrediente(ing);
+      if (p === null) { incompleto = true; return; }
+      custoPecas += p * q;
+    });
+    var taxa = (typeof m.taxa === "number" && isFinite(m.taxa) && m.taxa >= 0) ? m.taxa : 0;
+    var total = incompleto ? null : custoPecas + taxa;
+    var vendaLiq = (typeof m.venda === "number" && m.venda > 0) ? m.venda * (1 - dados.config.taxa_venda / 100) : null;
+    var power = (typeof m.power === "number" && m.power > 0) ? m.power : null;
+    return {
+      custoPecas: custoPecas, taxa: taxa, total: total, incompleto: incompleto,
+      vendaLiq: vendaLiq, power: power,
+      lucro: (total !== null && vendaLiq !== null) ? vendaLiq - total : null,
+      custoPorPower: (total !== null && power) ? total / power : null
+    };
+  }
+
+  function resRow(a, b) {
+    var d = el("div", "res-row");
+    d.appendChild(el("span", null, a));
+    d.appendChild(el("span", null, b));
+    return d;
+  }
+
+  function campoNum(label, valor, setter, refresh, step, min) {
+    var f = el("div", "field");
+    f.appendChild(el("span", "field-label", label));
+    var inp = document.createElement("input");
+    inp.type = "number"; inp.step = step || "any"; inp.min = (min != null) ? min : "0";
+    inp.value = (typeof valor === "number" && isFinite(valor)) ? valor : "";
+    inp.addEventListener("input", function () {
+      var n = parseFloat(inp.value);
+      setter((isFinite(n) && n >= 0) ? n : null);
+      refresh();
+      agendarSalvar();
+    });
+    f.appendChild(inp);
+    return f;
+  }
+
+  function linhaIngrediente(m, ing, i, refresh) {
+    var bloco = el("div", "ing-block");
+    var row = el("div", "ing-row");
+
+    var sel = document.createElement("select");
+    FAMILIAS.forEach(function (f) {
+      TIERS.forEach(function (t) {
+        var o = document.createElement("option");
+        o.value = f.id + ":" + t.id;
+        o.textContent = t.nome + " " + f.nome;
+        sel.appendChild(o);
+      });
+    });
+    var oc = document.createElement("option");
+    oc.value = "custom"; oc.textContent = "Outro (manual)…";
+    sel.appendChild(oc);
+    sel.value = ing.ref || "fan:rare";
+    sel.addEventListener("change", function () {
+      ing.ref = sel.value;
+      if (ing.ref === "custom") {
+        if (typeof ing.preco !== "number") ing.preco = null;
+        if (typeof ing.nome !== "string") ing.nome = "";
+      }
+      renderMiners(); // troca de tipo mostra/esconde os campos de peça manual
+      agendarSalvar();
+    });
+    row.appendChild(sel);
+
+    var qtd = document.createElement("input");
+    qtd.type = "number"; qtd.min = "0"; qtd.step = "any";
+    qtd.placeholder = "qtd";
+    qtd.setAttribute("aria-label", "Quantidade");
+    qtd.value = (typeof ing.qtd === "number") ? ing.qtd : "";
+    qtd.addEventListener("input", function () {
+      var n = parseFloat(qtd.value);
+      ing.qtd = (isFinite(n) && n >= 0) ? n : null;
+      refresh();
+      agendarSalvar();
+    });
+    row.appendChild(qtd);
+
+    var sub = el("span", "ing-sub", "");
+    sub.setAttribute("data-i", i);
+    row.appendChild(sub);
+
+    var rm = el("button", "btn-x", "✕");
+    rm.type = "button"; rm.title = "Remover peça";
+    rm.addEventListener("click", function () {
+      m.ingredientes.splice(i, 1);
+      renderMiners();
+      agendarSalvar();
+    });
+    row.appendChild(rm);
+    bloco.appendChild(row);
+
+    if (ing.ref === "custom") {
+      var crow = el("div", "ing-custom");
+      var nome = document.createElement("input");
+      nome.type = "text"; nome.placeholder = "Nome da peça";
+      nome.setAttribute("aria-label", "Nome da peça manual");
+      nome.value = ing.nome || "";
+      nome.addEventListener("input", function () { ing.nome = nome.value; agendarSalvar(); });
+      var pr = document.createElement("input");
+      pr.type = "number"; pr.step = "any"; pr.min = "0"; pr.placeholder = "preço";
+      pr.setAttribute("aria-label", "Preço da peça manual");
+      pr.value = (typeof ing.preco === "number" && isFinite(ing.preco)) ? ing.preco : "";
+      pr.addEventListener("input", function () {
+        var n = parseFloat(pr.value);
+        ing.preco = (isFinite(n) && n >= 0) ? n : null;
+        refresh();
+        agendarSalvar();
+      });
+      crow.appendChild(nome);
+      crow.appendChild(pr);
+      bloco.appendChild(crow);
+    }
+    return bloco;
+  }
+
+  function cardMiner(m, idx) {
+    var card = el("div", "miner");
+
+    var top = el("div", "miner-top");
+    var nome = document.createElement("input");
+    nome.type = "text"; nome.className = "miner-nome"; nome.placeholder = "Nome da mineradora";
+    nome.value = m.nome || "";
+    nome.addEventListener("input", function () { m.nome = nome.value; agendarSalvar(); });
+    top.appendChild(nome);
+    var del = el("button", "btn-x", "✕");
+    del.type = "button"; del.title = "Remover mineradora";
+    del.addEventListener("click", function () {
+      dados.mineradoras.splice(idx, 1);
+      renderMiners();
+      agendarSalvar();
+    });
+    top.appendChild(del);
+    card.appendChild(top);
+
+    m.ingredientes = m.ingredientes || [];
+    var lista = el("div", "ingredientes");
+    m.ingredientes.forEach(function (ing, i) {
+      lista.appendChild(linhaIngrediente(m, ing, i, refresh));
+    });
+    card.appendChild(lista);
+
+    var addIng = el("button", "add-ing", "+ peça");
+    addIng.type = "button";
+    addIng.addEventListener("click", function () {
+      m.ingredientes.push({ ref: "fan:rare", qtd: 1 });
+      renderMiners();
+      agendarSalvar();
+    });
+    card.appendChild(addIng);
+
+    var params = el("div", "miner-params");
+    params.appendChild(campoNum("Quantidade", m.quantidade, function (v) { m.quantidade = v; }, refresh, "1", "1"));
+    params.appendChild(campoNum("Taxa de craft (" + moeda + ")", m.taxa, function (v) { m.taxa = v; }, refresh));
+    params.appendChild(campoNum("Power (Ph/s)", m.power, function (v) { m.power = v; }, refresh));
+    params.appendChild(campoNum("Venda (" + moeda + ")", m.venda, function (v) { m.venda = v; }, refresh));
+    card.appendChild(params);
+
+    var resumo = el("div", "miner-resumo");
+    card.appendChild(resumo);
+
+    function refresh() {
+      // subtotais das peças, sem redesenhar (pra não perder o foco de quem digita)
+      [].forEach.call(lista.querySelectorAll(".ing-sub"), function (elSub) {
+        var i = +elSub.getAttribute("data-i");
+        var ing = m.ingredientes[i];
+        if (!ing) return;
+        var q = (typeof ing.qtd === "number" && ing.qtd > 0) ? ing.qtd : 0;
+        var p = precoIngrediente(ing);
+        if (q === 0) { elSub.textContent = ""; elSub.className = "ing-sub"; return; }
+        elSub.textContent = p === null ? "sem preço" : "= " + fmt(p * q) + " " + moeda;
+        elSub.className = "ing-sub" + (p === null ? " falta" : "");
+      });
+
+      resumo.textContent = "";
+      var a = analisarMiner(m);
+      var n = (typeof m.quantidade === "number" && m.quantidade > 0) ? m.quantidade : 1;
+      var suf = n > 1 ? " (" + n + "×)" : "";
+      var sufU = n > 1 ? " (" + n + " unidades)" : "";
+
+      resumo.appendChild(resRow("Peças" + suf, a.incompleto ? "falta preço de alguma peça" : fmt(a.custoPecas * n) + " " + moeda));
+      resumo.appendChild(resRow("Taxa de craft" + suf, fmt(a.taxa * n) + " " + moeda));
+      var tot = resRow("Custo total" + sufU, a.total === null ? "—" : fmt(a.total * n) + " " + moeda);
+      tot.className = "res-row total";
+      resumo.appendChild(tot);
+      if (n > 1 && a.total !== null) resumo.appendChild(resRow("Custo por unidade", fmt(a.total) + " " + moeda));
+      if (a.custoPorPower !== null) resumo.appendChild(resRow("Custo por Ph/s (unidade)", fmt(a.custoPorPower) + " " + moeda));
+      if (a.vendaLiq !== null) resumo.appendChild(resRow("Venda líq. de taxa" + suf, fmt(a.vendaLiq * n) + " " + moeda));
+      if (a.lucro !== null) {
+        var lr = resRow("Lucro na revenda" + sufU, (a.lucro > 0 ? "+" : "") + fmt(a.lucro * n, 4) + " " + moeda +
+          (a.total > 0 ? "   " + pct(a.lucro / a.total) : ""));
+        lr.className = "res-row total";
+        lr.lastChild.className = a.lucro > 0 ? "good" : "bad";
+        resumo.appendChild(lr);
+      }
+    }
+
+    refresh();
+    return card;
+  }
+
+  function renderMiners() {
+    dados.mineradoras = dados.mineradoras || [];
+    var wrap = document.getElementById("minersList");
+    wrap.textContent = "";
+    if (!dados.mineradoras.length) {
+      wrap.appendChild(el("p", "vazio-msg", "Nenhuma mineradora ainda. Clique em “+ Nova mineradora”."));
+      return;
+    }
+    dados.mineradoras.forEach(function (m, idx) {
+      wrap.appendChild(cardMiner(m, idx));
+    });
+  }
+
+  function mostrarAba(qual) {
+    var ehPecas = qual === "pecas";
+    document.getElementById("tab-pecas").hidden = !ehPecas;
+    document.getElementById("tab-miners").hidden = ehPecas;
+    var bp = document.getElementById("tabbtn-pecas");
+    var bm = document.getElementById("tabbtn-miners");
+    bp.classList.toggle("is-active", ehPecas);
+    bm.classList.toggle("is-active", !ehPecas);
+    bp.setAttribute("aria-selected", ehPecas ? "true" : "false");
+    bm.setAttribute("aria-selected", ehPecas ? "false" : "true");
+    if (!ehPecas) renderMiners(); // reflete os preços mais recentes ao abrir
+  }
+
+  /* ---------- colar do mercado ---------- */
+
+  var statusColarEl = document.getElementById("statusColar");
+  var mudancasEl = document.getElementById("mudancas");
+
+  function statusColar(txt, cls) {
+    statusColarEl.textContent = txt;
+    statusColarEl.className = "status" + (cls ? " " + cls : "");
+  }
+
+  function aplicarColado() {
+    var texto = document.getElementById("colado").value;
+    var r = Parser.parse(texto);
+    mudancasEl.textContent = "";
+
+    if (!r.itens.length) {
+      statusColar(
+        r.total ? "Achei as peças mas não achei preço nenhum. Copiou a lista inteira?"
+                : "Não achei nenhuma peça nesse texto.",
+        "erro"
+      );
+      return;
+    }
+
+    var mudou = [];
+    r.itens.forEach(function (i) {
+      if (!dados.precos[i.fam]) dados.precos[i.fam] = vazio();
+      if (!dados.quantidades[i.fam]) dados.quantidades[i.fam] = vazio();
+
+      var antes = dados.precos[i.fam][i.tier];
+      dados.precos[i.fam][i.tier] = i.preco;
+      dados.quantidades[i.fam][i.tier] = i.qtd;
+      if (antes !== i.preco) mudou.push({ nome: i.nome, antes: antes, depois: i.preco });
+    });
+
+    renderPrecos();
+    renderTudo();
+    agendarSalvar();
+
+    var partes = [r.itens.length + " peça" + (r.itens.length > 1 ? "s" : "") + " lida" + (r.itens.length > 1 ? "s" : "")];
+    partes.push(mudou.length ? mudou.length + " com preço novo" : "nenhum preço mudou");
+    if (r.semPreco.length) partes.push("sem preço: " + r.semPreco.join(", "));
+    statusColar(partes.join(" · "), r.semPreco.length ? "" : "ok");
+
+    mudou.forEach(function (c) {
+      var li = el("li");
+      li.appendChild(el("span", "nome", c.nome));
+      li.appendChild(el("span", null, c.antes === null || c.antes === undefined ? "—" : fmt(c.antes)));
+      li.appendChild(el("span", null, "→"));
+      var dir = (c.antes === null || c.antes === undefined) ? "novo"
+              : (c.depois > c.antes ? "sobe" : "desce");
+      li.appendChild(el("span", "novo " + dir, fmt(c.depois)));
+      mudancasEl.appendChild(li);
+    });
+  }
+
+  document.getElementById("lerColado").addEventListener("click", aplicarColado);
+  document.getElementById("limparColado").addEventListener("click", function () {
+    document.getElementById("colado").value = "";
+    mudancasEl.textContent = "";
+    statusColar("");
+  });
+
+  /* ---------- início ---------- */
+
+  document.getElementById("taxaVenda").addEventListener("input", function (e) {
+    var v = parseFloat(e.target.value);
+    dados.config.taxa_venda = (isFinite(v) && v >= 0) ? v : 0;
+    renderTudo();
+    agendarSalvar();
+  });
+  document.getElementById("desconto").addEventListener("input", function (e) {
+    var v = parseFloat(e.target.value);
+    dados.config.desconto_merge = (isFinite(v) && v >= 0) ? v : 0;
+    atualizaReceitas();
+    renderTudo();
+    agendarSalvar();
+  });
+  document.getElementById("qtdAlvo").addEventListener("input", renderPlano);
+  document.getElementById("alvo").addEventListener("change", renderPlano);
+
+  document.getElementById("tabbtn-pecas").addEventListener("click", function () { mostrarAba("pecas"); });
+  document.getElementById("tabbtn-miners").addEventListener("click", function () { mostrarAba("miners"); });
+  document.getElementById("addMiner").addEventListener("click", function () {
+    dados.mineradoras.push({
+      nome: "", quantidade: 1, taxa: null, power: null, venda: null,
+      ingredientes: [
+        { ref: "wire:rare", qtd: 1 },
+        { ref: "hash:rare", qtd: 1 },
+        { ref: "fan:rare", qtd: 1 }
+      ]
+    });
+    renderMiners();
+    agendarSalvar();
+  });
+
+  carregarDados()
+    .then(function (d) {
+      dados = d;
+      moeda = (d.config && d.config.moeda) || "RLT";
+      dados.quantidades = dados.quantidades || {};
+
+      // Formato antigo: uma lista de merge só, valendo pra todo mundo. Cada peça
+      // tem a sua taxa, então replica a lista por família e deixa editar depois.
+      if (Array.isArray(dados.merge)) {
+        var antigo = dados.merge;
+        dados.merge = {};
+        FAMILIAS.forEach(function (f) {
+          dados.merge[f.id] = antigo.map(function (m) { return Object.assign({}, m); });
+        });
+      }
+
+      FAMILIAS.forEach(function (f) {
+        if (!dados.precos[f.id]) dados.precos[f.id] = vazio();
+        if (!dados.quantidades[f.id]) dados.quantidades[f.id] = vazio();
+      });
+
+      dados.mineradoras = Array.isArray(dados.mineradoras) ? dados.mineradoras : [];
+
+      document.getElementById("taxaVenda").value = d.config.taxa_venda;
+      document.getElementById("desconto").value = d.config.desconto_merge;
+      renderAlvos();
+      renderPrecos();
+      renderMerge();
+      renderMiners();
+      renderTudo();
+      status("Dados carregados. Alterações são salvas neste navegador.");
+    })
+    .catch(function (e) {
+      status("Não foi possível carregar os dados: " + e.message, "erro");
+    });
+})();
+</script>
+</body>
+</html>
