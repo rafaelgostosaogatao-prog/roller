@@ -1,0 +1,156 @@
+{
+  "config": {
+    "moeda": "RLT",
+    "taxa_venda": 5,
+    "desconto_merge": 15
+  },
+  "merge": {
+    "fan": [
+      {
+        "de": "common",
+        "para": "uncommon",
+        "qtd": 50,
+        "taxa": 0.002
+      },
+      {
+        "de": "uncommon",
+        "para": "rare",
+        "qtd": 20,
+        "taxa": 0.05
+      },
+      {
+        "de": "rare",
+        "para": "epic",
+        "qtd": 10,
+        "taxa": 0.75
+      },
+      {
+        "de": "epic",
+        "para": "legendary",
+        "qtd": 5,
+        "taxa": 0.5
+      }
+    ],
+    "wire": [
+      {
+        "de": "common",
+        "para": "uncommon",
+        "qtd": 50,
+        "taxa": 0.005
+      },
+      {
+        "de": "uncommon",
+        "para": "rare",
+        "qtd": 20,
+        "taxa": 0.002
+      },
+      {
+        "de": "rare",
+        "para": "epic",
+        "qtd": 10,
+        "taxa": 0.05
+      },
+      {
+        "de": "epic",
+        "para": "legendary",
+        "qtd": 5,
+        "taxa": 0.75
+      }
+    ],
+    "hash": [
+      {
+        "de": "common",
+        "para": "uncommon",
+        "qtd": 50,
+        "taxa": 0.002
+      },
+      {
+        "de": "uncommon",
+        "para": "rare",
+        "qtd": 20,
+        "taxa": 0.05
+      },
+      {
+        "de": "rare",
+        "para": "epic",
+        "qtd": 10,
+        "taxa": 0.75
+      },
+      {
+        "de": "epic",
+        "para": "legendary",
+        "qtd": 5,
+        "taxa": 1.6
+      }
+    ]
+  },
+  "precos": {
+    "fan": {
+      "common": 0.0315,
+      "uncommon": 0.01596,
+      "rare": 0.3045,
+      "epic": 3.296895,
+      "legendary": 5.04
+    },
+    "wire": {
+      "common": 0.042,
+      "uncommon": 0.01596,
+      "rare": 0.273,
+      "epic": 2.331,
+      "legendary": 9.765
+    },
+    "hash": {
+      "common": 0.021,
+      "uncommon": 0.015855,
+      "rare": 0.294,
+      "epic": 3.313695,
+      "legendary": 13.965
+    }
+  },
+  "quantidades": {
+    "fan": {
+      "common": 2517636,
+      "uncommon": 395774,
+      "rare": 3774,
+      "epic": 385,
+      "legendary": 5822
+    },
+    "wire": {
+      "common": 2672525,
+      "uncommon": 244450,
+      "rare": 3781,
+      "epic": 738,
+      "legendary": 567
+    },
+    "hash": {
+      "common": 2990606,
+      "uncommon": 252000,
+      "rare": 6406,
+      "epic": 435,
+      "legendary": 386
+    }
+  },
+  "mineradoras": [
+    {
+      "nome": "",
+      "taxa": 0.4,
+      "power": null,
+      "venda": null,
+      "ingredientes": [
+        {
+          "ref": "wire:uncommon",
+          "qtd": 8
+        },
+        {
+          "ref": "hash:uncommon",
+          "qtd": 8
+        },
+        {
+          "ref": "fan:uncommon",
+          "qtd": 8
+        }
+      ],
+      "quantidade": 64
+    }
+  ]
+}
